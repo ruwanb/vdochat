@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>PeerJS</title>
+    {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/0.3.16/peer.min.js">
+    </script> --}}
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+</head>
+
+<body>
+    <h1>This is Sender</h1>
+
+    <h5>Local</h5>
+    <video id="local" autoplay style="background-color: black" width="150px"></video>
+
+    <hr>
+    <button type="button" onclick="call()">Call</button>
+    <hr>
+
+    <h5>Remote</h5>
+    <video id="remote" autoplay style="background-color: black" width="250px"></video>
+
+    <script>
+        function call() {
+            const peer = new Peer('sender', {
+                host: 'localhost',
+                port: 9000,
+                path: '/myapp'
+            })
+
+            const cons = {
+                video: true,
+                audio: false
+            }
+
+            peer.on('open', (id) => {
+                window.navigator.mediaDevices.getUserMedia(cons)
+                    .then(stream => {
+
+                        let local = document.querySelector('#local')
+
+                        local.srcObject = stream
+
+                        local.play()
+
+                        console.log('stream', stream)
+
+                        let call = peer.call('reciever', stream)
+
+                        call.on('stream', (remoteStream) => {
+                            let video = document.querySelector("#remote")
+                            video.srcObject = remoteStream
+                            video.play()
+                        })
+
+                        call.on('error', err => console.log('err', err))
+                    })
+                    .catch(
+                        err => console.log("err", err)
+                    )
+            })
+
+        }
+
+    </script>
+
+</body>
+
+</html>
